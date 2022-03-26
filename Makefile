@@ -1,0 +1,31 @@
+
+BASES = rpm
+
+default: $(BASES)
+
+pull:
+	docker pull artprod.dev.bloomberg.com/dataops/bnef_analyst_base_intellij:latest
+
+rpm:
+	rm -f build.txt
+	mvn -e -X install -DskipTests -pl '!docs' 2>&1 | tee build.txt
+
+ranger:
+	rm -f build.txt
+	mvn -e -X install -DskipTests -pl plugin/trino-ranger 2>&1 | tee build.txt
+
+clean:
+	mvn -e -X clean
+	find . -type d -name target -exec rm -rf {} \;
+
+attach:
+	docker exec -it ${USER}-intellij bash
+
+bash:
+	/usr/local/bin/startup_intellij.sh bash
+
+ui:
+	/usr/local/bin/startup_intellij.sh
+
+depends:
+	mvn dependency:tree 2>&1 | tee dependency.txt
