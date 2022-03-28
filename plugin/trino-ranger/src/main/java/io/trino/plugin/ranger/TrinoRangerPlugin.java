@@ -19,11 +19,9 @@ import io.trino.spi.security.SystemAccessControlFactory;
 import java.util.ArrayList;
 
 public class TrinoRangerPlugin
-        implements Plugin
-{
+        implements Plugin {
     @Override
-    public Iterable<SystemAccessControlFactory> getSystemAccessControlFactories()
-    {
+    public Iterable<SystemAccessControlFactory> getSystemAccessControlFactories() {
         ArrayList<SystemAccessControlFactory> list = new ArrayList<>();
         SystemAccessControlFactory factory = new RangerSystemAccessControlFactory();
         list.add(factory);

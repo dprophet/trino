@@ -28,66 +28,66 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 public class TrinoConnectionManager {
-  private static final Logger LOG = Logger.getLogger(TrinoConnectionManager.class);
+    private static final Logger LOG = Logger.getLogger(TrinoConnectionManager.class);
 
-  protected ConcurrentMap<String, TrinoClient> trinoConnectionCache;
-  protected ConcurrentMap<String, Boolean> repoConnectStatusMap;
+    protected ConcurrentMap<String, TrinoClient> trinoConnectionCache;
+    protected ConcurrentMap<String, Boolean> repoConnectStatusMap;
 
-  public TrinoConnectionManager() {
-    trinoConnectionCache = new ConcurrentHashMap<>();
-    repoConnectStatusMap = new ConcurrentHashMap<>();
-  }
-
-  public TrinoClient getTrinoConnection(final String serviceName, final String serviceType, final Map<String, String> configs) {
-    TrinoClient trinoClient = null;
-
-    if (serviceType != null) {
-      trinoClient = trinoConnectionCache.get(serviceName);
-      if (trinoClient == null) {
-        if (configs != null) {
-          final Callable<TrinoClient> connectTrino = new Callable<TrinoClient>() {
-            @Override
-            public TrinoClient call() throws Exception {
-              return new TrinoClient(serviceName, configs);
-            }
-          };
-          try {
-            trinoClient = TimedEventUtil.timedTask(connectTrino, 5, TimeUnit.SECONDS);
-          } catch (Exception e) {
-            LOG.error("Error connecting to Trino repository: " +
-            serviceName + " using config: " + configs, e);
-          }
-
-          TrinoClient oldClient = null;
-          if (trinoClient != null) {
-            oldClient = trinoConnectionCache.putIfAbsent(serviceName, trinoClient);
-          } else {
-            oldClient = trinoConnectionCache.get(serviceName);
-          }
-
-          if (oldClient != null) {
-            if (trinoClient != null) {
-              trinoClient.close();
-            }
-            trinoClient = oldClient;
-          }
-          repoConnectStatusMap.put(serviceName, true);
-        } else {
-          LOG.error("Connection Config not defined for asset :"
-            + serviceName, new Throwable());
-        }
-      } else {
-        try {
-          trinoClient.getCatalogList("*", null);
-        } catch (Exception e) {
-          trinoConnectionCache.remove(serviceName);
-          trinoClient.close();
-          trinoClient = getTrinoConnection(serviceName, serviceType, configs);
-        }
-      }
-    } else {
-      LOG.error("Asset not found with name " + serviceName, new Throwable());
+    public TrinoConnectionManager() {
+        trinoConnectionCache = new ConcurrentHashMap<>();
+        repoConnectStatusMap = new ConcurrentHashMap<>();
     }
-    return trinoClient;
-  }
+
+    public TrinoClient getTrinoConnection(final String serviceName, final String serviceType, final Map<String, String> configs) {
+        TrinoClient trinoClient = null;
+
+        if (serviceType != null) {
+            trinoClient = trinoConnectionCache.get(serviceName);
+            if (trinoClient == null) {
+                if (configs != null) {
+                    final Callable<TrinoClient> connectTrino = new Callable<TrinoClient>() {
+                        @Override
+                        public TrinoClient call() throws Exception {
+                            return new TrinoClient(serviceName, configs);
+                        }
+                    };
+                    try {
+                        trinoClient = TimedEventUtil.timedTask(connectTrino, 5, TimeUnit.SECONDS);
+                    } catch (Exception e) {
+                        LOG.error("Error connecting to Trino repository: " +
+                                serviceName + " using config: " + configs, e);
+                    }
+
+                    TrinoClient oldClient = null;
+                    if (trinoClient != null) {
+                        oldClient = trinoConnectionCache.putIfAbsent(serviceName, trinoClient);
+                    } else {
+                        oldClient = trinoConnectionCache.get(serviceName);
+                    }
+
+                    if (oldClient != null) {
+                        if (trinoClient != null) {
+                            trinoClient.close();
+                        }
+                        trinoClient = oldClient;
+                    }
+                    repoConnectStatusMap.put(serviceName, true);
+                } else {
+                    LOG.error("Connection Config not defined for asset :"
+                            + serviceName, new Throwable());
+                }
+            } else {
+                try {
+                    trinoClient.getCatalogList("*", null);
+                } catch (Exception e) {
+                    trinoConnectionCache.remove(serviceName);
+                    trinoClient.close();
+                    trinoClient = getTrinoConnection(serviceName, serviceType, configs);
+                }
+            }
+        } else {
+            LOG.error("Asset not found with name " + serviceName, new Throwable());
+        }
+        return trinoClient;
+    }
 }
