@@ -29,3 +29,7 @@ ui:
 
 depends:
 	mvn dependency:tree 2>&1 | tee dependency.txt
+
+# When already inside the intellij docker container, run this to bring up IntelliJ
+intellij:
+	/opt/intellij/bin/idea.sh

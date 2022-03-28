@@ -59,7 +59,7 @@ import static java.util.Locale.ENGLISH;
 
 public class RangerSystemAccessControl
   implements SystemAccessControl {
-  private static Logger LOG = LoggerFactory.getLogger(RangerSystemAccessControl.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RangerSystemAccessControl.class);
 
   final public static String RANGER_CONFIG_KEYTAB = "ranger.keytab";
   final public static String RANGER_CONFIG_PRINCIPAL = "ranger.principal";
@@ -379,7 +379,7 @@ public class RangerSystemAccessControl
   @Override
   public void checkCanShowTables(SystemSecurityContext context, CatalogSchemaName schema) {
     if (!hasPermission(createResource(schema), context, TrinoAccessType.SHOW)) {
-      LOG.debug("RangerSystemAccessControl.checkCanShowTables(" + schema.toString() + ") denied");
+      LOG.debug("RangerSystemAccessControl.checkCanShowTables(" + schema + ") denied");
       AccessDeniedException.denyShowTables(schema.toString());
     }
   }
@@ -388,7 +388,7 @@ public class RangerSystemAccessControl
   @Override
   public void checkCanShowCreateTable(SystemSecurityContext context, CatalogSchemaTableName table) {
     if (!hasPermission(createResource(table), context, TrinoAccessType.SHOW)) {
-      LOG.debug("RangerSystemAccessControl.checkCanShowTables(" + table.toString() + ") denied");
+      LOG.debug("RangerSystemAccessControl.checkCanShowTables(" + table + ") denied");
       AccessDeniedException.denyShowCreateTable(table.toString());
     }
   }
@@ -463,7 +463,7 @@ public class RangerSystemAccessControl
   @Override
   public void checkCanSetTableComment(SystemSecurityContext context, CatalogSchemaTableName table) {
     if (!hasPermission(createResource(table), context, TrinoAccessType.ALTER)) {
-      LOG.debug("RangerSystemAccessControl.checkCanSetTableComment(" + table.toString() + ") denied");
+      LOG.debug("RangerSystemAccessControl.checkCanSetTableComment(" + table + ") denied");
       AccessDeniedException.denyCommentTable(table.toString());
     }
   }
@@ -509,7 +509,7 @@ public class RangerSystemAccessControl
   @Override
   public void checkCanRenameView(SystemSecurityContext context, CatalogSchemaTableName view, CatalogSchemaTableName newView) {
     if (!hasPermission(createResource(view), context, TrinoAccessType.ALTER)) {
-      LOG.debug("RangerSystemAccessControl.checkCanRenameView(" + view.toString() + ") denied");
+      LOG.debug("RangerSystemAccessControl.checkCanRenameView(" + view + ") denied");
       AccessDeniedException.denyRenameView(view.toString(), newView.toString());
     }
   }
@@ -557,7 +557,7 @@ public class RangerSystemAccessControl
   @Override
   public void checkCanShowColumns(SystemSecurityContext context, CatalogSchemaTableName table) {
     if (!hasPermission(createResource(table), context, TrinoAccessType.SHOW)) {
-      LOG.debug("RangerSystemAccessControl.checkCanShowTables(" + table.toString() + ") denied");
+      LOG.debug("RangerSystemAccessControl.checkCanShowTables(" + table + ") denied");
       AccessDeniedException.denyShowColumns(table.toString());
     }
   }
@@ -843,5 +843,5 @@ class RangerTrinoAccessRequest
 }
 
 enum TrinoAccessType {
-  CREATE, DROP, SELECT, INSERT, DELETE, USE, ALTER, ALL, GRANT, REVOKE, SHOW, IMPERSONATE, EXECUTE;
+  CREATE, DROP, SELECT, INSERT, DELETE, USE, ALTER, ALL, GRANT, REVOKE, SHOW, IMPERSONATE, EXECUTE
 }
