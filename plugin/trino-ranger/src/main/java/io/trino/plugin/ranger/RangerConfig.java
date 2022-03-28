@@ -21,44 +21,56 @@ package io.trino.plugin.ranger;
 import io.airlift.configuration.Config;
 import io.airlift.configuration.ConfigDescription;
 
-public class RangerConfig {
+public class RangerConfig
+{
     private String keytab;
     private String principal;
-    private boolean useUgi = false;
+    private boolean useUgi;
     private String hadoopConfigPath;
 
-    public String getKeytab() {
+    public RangerConfig()
+    {
+        useUgi = false;
+    }
+
+    public String getKeytab()
+    {
         return keytab;
     }
 
     @Config("ranger.keytab")
     @ConfigDescription("Keytab for authentication against Ranger")
     @SuppressWarnings("unused")
-    public RangerConfig setKeytab(String keytab) {
+    public RangerConfig setKeytab(String keytab)
+    {
         this.keytab = keytab;
         return this;
     }
 
-    public String getPrincipal() {
+    public String getPrincipal()
+    {
         return principal;
     }
 
     @Config("ranger.principal")
     @ConfigDescription("Principal for authentication against Ranger with keytab")
     @SuppressWarnings("unused")
-    public RangerConfig setPrincipal(String principal) {
+    public RangerConfig setPrincipal(String principal)
+    {
         this.principal = principal;
         return this;
     }
 
-    public boolean isUseUgi() {
+    public boolean isUseUgi()
+    {
         return useUgi;
     }
 
     @Config("ranger.use_ugi")
     @ConfigDescription("Use Hadoop User Group Information instead of Trino groups")
     @SuppressWarnings("unused")
-    public RangerConfig setUseUgi(boolean useUgi) {
+    public RangerConfig setUseUgi(boolean useUgi)
+    {
         this.useUgi = useUgi;
         return this;
     }
@@ -66,12 +78,14 @@ public class RangerConfig {
     @Config("ranger.hadoop_config")
     @ConfigDescription("Path to hadoop configuration. Defaults to trino-ranger-site.xml in classpath")
     @SuppressWarnings("unused")
-    public RangerConfig setHadoopConfigPath(String hadoopConfigPath) {
+    public RangerConfig setHadoopConfigPath(String hadoopConfigPath)
+    {
         this.hadoopConfigPath = hadoopConfigPath;
         return this;
     }
 
-    public String getHadoopConfigPath() {
+    public String getHadoopConfigPath()
+    {
         return hadoopConfigPath;
     }
 }

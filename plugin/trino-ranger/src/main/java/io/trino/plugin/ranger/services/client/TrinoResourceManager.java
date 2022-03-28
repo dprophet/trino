@@ -28,7 +28,8 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-public class TrinoResourceManager {
+public final class TrinoResourceManager
+{
     private static final Log LOG = LogFactory.getLog(TrinoResourceManager.class);
 
     private static final String CATALOG = "catalog";
@@ -36,8 +37,12 @@ public class TrinoResourceManager {
     private static final String TABLE = "table";
     private static final String COLUMN = "column";
 
+    private TrinoResourceManager()
+    {
+    }
 
-    public static Map<String, Object> connectionTest(String serviceName, Map<String, String> configs) throws Exception {
+    public static Map<String, Object> connectionTest(String serviceName, Map<String, String> configs) throws Exception
+    {
         Map<String, Object> ret = null;
 
         if (LOG.isDebugEnabled()) {
@@ -46,7 +51,8 @@ public class TrinoResourceManager {
 
         try {
             ret = TrinoClient.connectionTest(serviceName, configs);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             LOG.error("<== TrinoResourceManager.connectionTest Error: " + e);
             throw e;
         }
@@ -58,8 +64,8 @@ public class TrinoResourceManager {
         return ret;
     }
 
-    public static List<String> getTrinoResources(String serviceName, String serviceType, Map<String, String> configs, ResourceLookupContext context) throws Exception {
-
+    public static List<String> getTrinoResources(String serviceName, String serviceType, Map<String, String> configs, ResourceLookupContext context) throws Exception
+    {
         String userInput = context.getUserInput();
         String resource = context.getResourceName();
         Map<String, List<String>> resourceMap = context.getResources();
@@ -72,7 +78,6 @@ public class TrinoResourceManager {
         String schemaName = null;
         String tableName = null;
         String columnName = null;
-
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("<== TrinoResourceMgr.getTrinoResources()  UserInput: \"" + userInput + "\" resource : " + resource + " resourceMap: " + resourceMap);
@@ -104,7 +109,6 @@ public class TrinoResourceManager {
 
         if (serviceName != null && userInput != null) {
             try {
-
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("==> TrinoResourceMgr.getTrinoResources() UserInput: " + userInput + " configs: " + configs + " catalogList: " + catalogList + " tableList: "
                             + tableList + " columnList: " + columnList);
@@ -129,33 +133,40 @@ public class TrinoResourceManager {
                         finalCatalogName = catalogName;
                         callableObj = new Callable<List<String>>() {
                             @Override
-                            public List<String> call() throws Exception {
+                            public List<String> call() throws Exception
+                            {
                                 return trinoClient.getCatalogList(finalCatalogName, finalCatalogList);
                             }
                         };
-                    } else if (schemaName != null && !schemaName.isEmpty()) {
+                    }
+                    else if (schemaName != null && !schemaName.isEmpty()) {
                         finalSchemaName = schemaName;
                         callableObj = new Callable<List<String>>() {
                             @Override
-                            public List<String> call() throws Exception {
+                            public List<String> call() throws Exception
+                            {
                                 return trinoClient.getSchemaList(finalSchemaName, finalCatalogList, finalSchemaList);
                             }
                         };
-                    } else if (tableName != null && !tableName.isEmpty()) {
+                    }
+                    else if (tableName != null && !tableName.isEmpty()) {
                         finalTableName = tableName;
                         callableObj = new Callable<List<String>>() {
                             @Override
-                            public List<String> call() throws Exception {
+                            public List<String> call() throws Exception
+                            {
                                 return trinoClient.getTableList(finalTableName, finalCatalogList, finalSchemaList, finalTableList);
                             }
                         };
-                    } else if (columnName != null && !columnName.isEmpty()) {
+                    }
+                    else if (columnName != null && !columnName.isEmpty()) {
                         // Column names are matched by the wildcardmatcher
                         columnName += "*";
                         finalColumnName = columnName;
                         callableObj = new Callable<List<String>>() {
                             @Override
-                            public List<String> call() throws Exception {
+                            public List<String> call() throws Exception
+                            {
                                 return trinoClient.getColumnList(finalColumnName, finalCatalogList, finalSchemaList, finalTableList, finalColumnList);
                             }
                         };
@@ -164,11 +175,13 @@ public class TrinoResourceManager {
                         synchronized (trinoClient) {
                             resultList = TimedEventUtil.timedTask(callableObj, 5, TimeUnit.SECONDS);
                         }
-                    } else {
+                    }
+                    else {
                         LOG.error("Could not initiate a TrinoClient timedTask");
                     }
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 LOG.error("Unable to get Trino resource", e);
                 throw e;
             }

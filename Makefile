@@ -12,7 +12,7 @@ rpm:
 
 ranger:
 	rm -f build.txt
-	mvn -e -X install -DskipTests -pl plugin/trino-ranger 2>&1 | tee build.txt
+	mvn -e -X install -DskipTests -pl plugin/trino-ranger 2>&1 | tee build_ranger.txt
 
 clean:
 	mvn -e -X clean

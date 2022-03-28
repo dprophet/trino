@@ -36,13 +36,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class RangerServiceTrino extends RangerBaseService {
+public class RangerServiceTrino
+        extends RangerBaseService
+{
     private static final Log LOG = LogFactory.getLog(RangerServiceTrino.class);
 
     public static final String ACCESS_TYPE_SELECT = "select";
 
     @Override
-    public List<RangerPolicy> getDefaultRangerPolicies() throws Exception {
+    public List<RangerPolicy> getDefaultRangerPolicies() throws Exception
+    {
         if (LOG.isDebugEnabled()) {
             LOG.debug("==> RangerServiceTrino.getDefaultRangerPolicies()");
         }
@@ -67,7 +70,8 @@ public class RangerServiceTrino extends RangerBaseService {
     }
 
     @Override
-    public Map<String, Object> validateConfig() throws Exception {
+    public Map<String, Object> validateConfig() throws Exception
+    {
         Map<String, Object> ret = new HashMap<String, Object>();
         String serviceName = getServiceName();
 
@@ -82,7 +86,8 @@ public class RangerServiceTrino extends RangerBaseService {
                     configs.put(HadoopConfigHolder.RANGER_LOGIN_PASSWORD, null);
                 }
                 ret = TrinoResourceManager.connectionTest(serviceName, configs);
-            } catch (HadoopException he) {
+            }
+            catch (HadoopException he) {
                 LOG.error("<== RangerServiceTrino.validateConfig Error:" + he);
                 throw he;
             }
@@ -96,8 +101,8 @@ public class RangerServiceTrino extends RangerBaseService {
     }
 
     @Override
-    public List<String> lookupResource(ResourceLookupContext context) throws Exception {
-
+    public List<String> lookupResource(ResourceLookupContext context) throws Exception
+    {
         List<String> ret = new ArrayList<String>();
         String serviceName = getServiceName();
         String serviceType = getServiceType();
@@ -111,7 +116,8 @@ public class RangerServiceTrino extends RangerBaseService {
                     configs.put(HadoopConfigHolder.RANGER_LOGIN_PASSWORD, null);
                 }
                 ret = TrinoResourceManager.getTrinoResources(serviceName, serviceType, configs, context);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 LOG.error("<==RangerServiceTrino.lookupResource Error : " + e);
                 throw e;
             }
@@ -121,5 +127,4 @@ public class RangerServiceTrino extends RangerBaseService {
         }
         return ret;
     }
-
 }

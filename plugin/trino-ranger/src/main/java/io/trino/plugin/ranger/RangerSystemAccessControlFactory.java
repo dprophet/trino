@@ -26,16 +26,19 @@ import static io.airlift.configuration.ConfigBinder.configBinder;
 import static java.util.Objects.requireNonNull;
 
 public class RangerSystemAccessControlFactory
-        implements SystemAccessControlFactory {
+        implements SystemAccessControlFactory
+{
     private static final String NAME = "ranger";
 
     @Override
-    public String getName() {
+    public String getName()
+    {
         return NAME;
     }
 
     @Override
-    public SystemAccessControl create(Map<String, String> config) {
+    public SystemAccessControl create(Map<String, String> config)
+    {
         requireNonNull(config, "config is null");
 
         try {
@@ -43,8 +46,7 @@ public class RangerSystemAccessControlFactory
                     binder -> {
                         configBinder(binder).bindConfig(RangerConfig.class);
                         binder.bind(RangerSystemAccessControl.class).in(Scopes.SINGLETON);
-                    }
-            );
+                    });
 
             Injector injector = app
                     .strictConfig()
@@ -53,7 +55,8 @@ public class RangerSystemAccessControlFactory
                     .initialize();
 
             return injector.getInstance(RangerSystemAccessControl.class);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throwIfUnchecked(e);
             throw new RuntimeException(e);
         }

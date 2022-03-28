@@ -27,6 +27,7 @@ import org.apache.ranger.plugin.client.HadoopConfigHolder;
 import org.apache.ranger.plugin.client.HadoopException;
 
 import javax.security.auth.Subject;
+
 import java.io.Closeable;
 import java.security.PrivilegedAction;
 import java.sql.Connection;
@@ -42,7 +43,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-public class TrinoClient extends BaseClient implements Closeable {
+public class TrinoClient
+        extends BaseClient implements Closeable
+{
     public static final String TRINO_USER_NAME_PROP = "user";
     public static final String TRINO_PASSWORD_PROP = "password";
 
@@ -54,26 +57,31 @@ public class TrinoClient extends BaseClient implements Closeable {
 
     private Connection con;
 
-    public TrinoClient(String serviceName) throws Exception {
+    public TrinoClient(String serviceName) throws Exception
+    {
         super(serviceName, null);
         init();
     }
 
-    public TrinoClient(String serviceName, Map<String, String> properties) throws Exception {
+    public TrinoClient(String serviceName, Map<String, String> properties) throws Exception
+    {
         super(serviceName, properties);
         init();
     }
 
-    private void init() throws Exception {
+    private void init() throws Exception
+    {
         Subject.doAs(getLoginSubject(), new PrivilegedAction<Void>() {
-            public Void run() {
+            public Void run()
+            {
                 initConnection();
                 return null;
             }
         });
     }
 
-    private void initConnection() {
+    private void initConnection()
+    {
         Properties prop = getConfigHolder().getRangerSection();
         String driverClassName = prop.getProperty("jdbc.driverClassName");
         String url = prop.getProperty("jdbc.url");
@@ -88,27 +96,31 @@ public class TrinoClient extends BaseClient implements Closeable {
             try {
                 Driver driver = (Driver) Class.forName(driverClassName).newInstance();
                 DriverManager.registerDriver(driver);
-            } catch (SQLException e) {
+            }
+            catch (SQLException e) {
                 String msgDesc = "initConnection: Caught SQLException while registering"
                         + " the Trino driver.";
                 HadoopException hdpException = new HadoopException(msgDesc, e);
                 hdpException.generateResponseDataMap(false, getMessage(e),
                         msgDesc + ERR_MSG, null, null);
                 throw hdpException;
-            } catch (IllegalAccessException ilae) {
+            }
+            catch (IllegalAccessException ilae) {
                 String msgDesc = "initConnection: Class or its nullary constructor might not accessible.";
                 HadoopException hdpException = new HadoopException(msgDesc, ilae);
                 hdpException.generateResponseDataMap(false, getMessage(ilae),
                         msgDesc + ERR_MSG, null, null);
                 throw hdpException;
-            } catch (InstantiationException ie) {
+            }
+            catch (InstantiationException ie) {
                 String msgDesc = "initConnection: Class may not have its nullary constructor or "
                         + "may be the instantiation fails for some other reason.";
                 HadoopException hdpException = new HadoopException(msgDesc, ie);
                 hdpException.generateResponseDataMap(false, getMessage(ie),
                         msgDesc + ERR_MSG, null, null);
                 throw hdpException;
-            } catch (ExceptionInInitializerError eie) {
+            }
+            catch (ExceptionInInitializerError eie) {
                 String msgDesc = "initConnection: Got ExceptionInInitializerError, "
                         + "The initialization provoked by this method fails.";
                 HadoopException hdpException = new HadoopException(msgDesc,
@@ -116,7 +128,8 @@ public class TrinoClient extends BaseClient implements Closeable {
                 hdpException.generateResponseDataMap(false, getMessage(eie),
                         msgDesc + ERR_MSG, null, null);
                 throw hdpException;
-            } catch (SecurityException se) {
+            }
+            catch (SecurityException se) {
                 String msgDesc = "initConnection: unable to initiate connection to Trino instance,"
                         + " The caller's class loader is not the same as or an ancestor "
                         + "of the class loader for the current class and invocation of "
@@ -125,7 +138,8 @@ public class TrinoClient extends BaseClient implements Closeable {
                 hdpException.generateResponseDataMap(false, getMessage(se),
                         msgDesc + ERR_MSG, null, null);
                 throw hdpException;
-            } catch (Throwable t) {
+            }
+            catch (Throwable t) {
                 String msgDesc = "initConnection: Unable to connect to Trino instance, "
                         + "please provide valid value of field : {jdbc.driverClassName}.";
                 HadoopException hdpException = new HadoopException(msgDesc, t);
@@ -137,29 +151,32 @@ public class TrinoClient extends BaseClient implements Closeable {
 
         try {
             con = DriverManager.getConnection(url, trinoProperties);
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             String msgDesc = "Unable to connect to Trino instance.";
             HadoopException hdpException = new HadoopException(msgDesc, e);
             hdpException.generateResponseDataMap(false, getMessage(e),
                     msgDesc + ERR_MSG, null, null);
             throw hdpException;
-        } catch (SecurityException se) {
+        }
+        catch (SecurityException se) {
             String msgDesc = "Unable to connect to Trino instance.";
             HadoopException hdpException = new HadoopException(msgDesc, se);
             hdpException.generateResponseDataMap(false, getMessage(se),
                     msgDesc + ERR_MSG, null, null);
             throw hdpException;
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             String msgDesc = "initConnection: Unable to connect to Trino instance, ";
             HadoopException hdpException = new HadoopException(msgDesc, t);
             hdpException.generateResponseDataMap(false, getMessage(t),
                     msgDesc + ERR_MSG, null, null);
             throw hdpException;
         }
-
     }
 
-    private List<String> getCatalogs(String needle, List<String> catalogs) throws HadoopException {
+    private List<String> getCatalogs(String needle, List<String> catalogs) throws HadoopException
+    {
         List<String> ret = new ArrayList<>();
         if (con != null) {
             Statement stat = null;
@@ -180,20 +197,23 @@ public class TrinoClient extends BaseClient implements Closeable {
                     }
                     ret.add(catalogName);
                 }
-            } catch (SQLTimeoutException sqlt) {
+            }
+            catch (SQLTimeoutException sqlt) {
                 String msgDesc = "Time Out, Unable to execute SQL [" + sql
                         + "].";
                 HadoopException hdpException = new HadoopException(msgDesc,
                         sqlt);
                 hdpException.generateResponseDataMap(false, getMessage(sqlt),
                         msgDesc + ERR_MSG, null, null);
-            } catch (SQLException se) {
+            }
+            catch (SQLException se) {
                 String msg = "Unable to execute SQL [" + sql + "]. ";
                 HadoopException he = new HadoopException(msg, se);
                 he.generateResponseDataMap(false, getMessage(se), msg + ERR_MSG,
                         null, null);
                 throw he;
-            } finally {
+            }
+            finally {
                 close(rs);
                 close(stat);
             }
@@ -201,17 +221,20 @@ public class TrinoClient extends BaseClient implements Closeable {
         return ret;
     }
 
-    public List<String> getCatalogList(String needle, final List<String> catalogs) throws HadoopException {
+    public List<String> getCatalogList(String needle, final List<String> catalogs) throws HadoopException
+    {
         final String ndl = needle;
         final List<String> catList = catalogs;
 
         List<String> dbs = Subject.doAs(getLoginSubject(), new PrivilegedAction<List<String>>() {
             @Override
-            public List<String> run() {
+            public List<String> run()
+            {
                 List<String> ret = null;
                 try {
                     ret = getCatalogs(ndl, catList);
-                } catch (HadoopException he) {
+                }
+                catch (HadoopException he) {
                     LOG.error("<== TrinoClient getCatalogList() :Unable to get the Database List", he);
                     throw he;
                 }
@@ -222,7 +245,8 @@ public class TrinoClient extends BaseClient implements Closeable {
         return dbs;
     }
 
-    private List<String> getSchemas(String needle, List<String> catalogs, List<String> schemas) throws HadoopException {
+    private List<String> getSchemas(String needle, List<String> catalogs, List<String> schemas) throws HadoopException
+    {
         List<String> ret = new ArrayList<>();
         if (con != null) {
             Statement stat = null;
@@ -247,7 +271,8 @@ public class TrinoClient extends BaseClient implements Closeable {
                                 }
                                 ret.add(schema);
                             }
-                        } finally {
+                        }
+                        finally {
                             close(rs);
                             close(stat);
                             rs = null;
@@ -255,7 +280,8 @@ public class TrinoClient extends BaseClient implements Closeable {
                         }
                     }
                 }
-            } catch (SQLTimeoutException sqlt) {
+            }
+            catch (SQLTimeoutException sqlt) {
                 String msgDesc = "Time Out, Unable to execute SQL [" + sql
                         + "].";
                 HadoopException hdpException = new HadoopException(msgDesc,
@@ -266,7 +292,8 @@ public class TrinoClient extends BaseClient implements Closeable {
                     LOG.debug("<== TrinoClient.getSchemas() Error : ", sqlt);
                 }
                 throw hdpException;
-            } catch (SQLException sqle) {
+            }
+            catch (SQLException sqle) {
                 String msgDesc = "Unable to execute SQL [" + sql + "].";
                 HadoopException hdpException = new HadoopException(msgDesc,
                         sqle);
@@ -282,18 +309,21 @@ public class TrinoClient extends BaseClient implements Closeable {
         return ret;
     }
 
-    public List<String> getSchemaList(String needle, List<String> catalogs, List<String> schemas) throws HadoopException {
+    public List<String> getSchemaList(String needle, List<String> catalogs, List<String> schemas) throws HadoopException
+    {
         final String ndl = needle;
         final List<String> cats = catalogs;
         final List<String> shms = schemas;
 
         List<String> schemaList = Subject.doAs(getLoginSubject(), new PrivilegedAction<List<String>>() {
             @Override
-            public List<String> run() {
+            public List<String> run()
+            {
                 List<String> ret = null;
                 try {
                     ret = getSchemas(ndl, cats, shms);
-                } catch (HadoopException he) {
+                }
+                catch (HadoopException he) {
                     LOG.error("<== TrinoClient getSchemaList() :Unable to get the Schema List", he);
                 }
                 return ret;
@@ -303,7 +333,8 @@ public class TrinoClient extends BaseClient implements Closeable {
         return schemaList;
     }
 
-    private List<String> getTables(String needle, List<String> catalogs, List<String> schemas, List<String> tables) throws HadoopException {
+    private List<String> getTables(String needle, List<String> catalogs, List<String> schemas, List<String> tables) throws HadoopException
+    {
         List<String> ret = new ArrayList<>();
         if (con != null) {
             Statement stat = null;
@@ -329,7 +360,8 @@ public class TrinoClient extends BaseClient implements Closeable {
                                     }
                                     ret.add(table);
                                 }
-                            } finally {
+                            }
+                            finally {
                                 close(rs);
                                 close(stat);
                                 rs = null;
@@ -337,7 +369,8 @@ public class TrinoClient extends BaseClient implements Closeable {
                             }
                         }
                     }
-                } catch (SQLTimeoutException sqlt) {
+                }
+                catch (SQLTimeoutException sqlt) {
                     String msgDesc = "Time Out, Unable to execute SQL [" + sql
                             + "].";
                     HadoopException hdpException = new HadoopException(msgDesc,
@@ -348,7 +381,8 @@ public class TrinoClient extends BaseClient implements Closeable {
                         LOG.debug("<== TrinoClient.getTables() Error : ", sqlt);
                     }
                     throw hdpException;
-                } catch (SQLException sqle) {
+                }
+                catch (SQLException sqle) {
                     String msgDesc = "Unable to execute SQL [" + sql + "].";
                     HadoopException hdpException = new HadoopException(msgDesc,
                             sqle);
@@ -364,7 +398,8 @@ public class TrinoClient extends BaseClient implements Closeable {
         return ret;
     }
 
-    public List<String> getTableList(String needle, List<String> catalogs, List<String> schemas, List<String> tables) throws HadoopException {
+    public List<String> getTableList(String needle, List<String> catalogs, List<String> schemas, List<String> tables) throws HadoopException
+    {
         final String ndl = needle;
         final List<String> cats = catalogs;
         final List<String> shms = schemas;
@@ -372,11 +407,13 @@ public class TrinoClient extends BaseClient implements Closeable {
 
         List<String> tableList = Subject.doAs(getLoginSubject(), new PrivilegedAction<List<String>>() {
             @Override
-            public List<String> run() {
+            public List<String> run()
+            {
                 List<String> ret = null;
                 try {
                     ret = getTables(ndl, cats, shms, tbls);
-                } catch (HadoopException he) {
+                }
+                catch (HadoopException he) {
                     LOG.error("<== TrinoClient getTableList() :Unable to get the Column List", he);
                     throw he;
                 }
@@ -387,7 +424,8 @@ public class TrinoClient extends BaseClient implements Closeable {
         return tableList;
     }
 
-    private List<String> getColumns(String needle, List<String> catalogs, List<String> schemas, List<String> tables, List<String> columns) throws HadoopException {
+    private List<String> getColumns(String needle, List<String> catalogs, List<String> schemas, List<String> tables, List<String> columns) throws HadoopException
+    {
         List<String> ret = new ArrayList<>();
         if (con != null) {
             String regex = null;
@@ -420,11 +458,13 @@ public class TrinoClient extends BaseClient implements Closeable {
                                         }
                                         if (regex == null) {
                                             ret.add(column);
-                                        } else if (FilenameUtils.wildcardMatch(column, regex)) {
+                                        }
+                                        else if (FilenameUtils.wildcardMatch(column, regex)) {
                                             ret.add(column);
                                         }
                                     }
-                                } finally {
+                                }
+                                finally {
                                     close(rs);
                                     close(stat);
                                     stat = null;
@@ -433,7 +473,8 @@ public class TrinoClient extends BaseClient implements Closeable {
                             }
                         }
                     }
-                } catch (SQLTimeoutException sqlt) {
+                }
+                catch (SQLTimeoutException sqlt) {
                     String msgDesc = "Time Out, Unable to execute SQL [" + sql
                             + "].";
                     HadoopException hdpException = new HadoopException(msgDesc,
@@ -444,7 +485,8 @@ public class TrinoClient extends BaseClient implements Closeable {
                         LOG.debug("<== TrinoClient.getColumns() Error : ", sqlt);
                     }
                     throw hdpException;
-                } catch (SQLException sqle) {
+                }
+                catch (SQLException sqle) {
                     String msgDesc = "Unable to execute SQL [" + sql + "].";
                     HadoopException hdpException = new HadoopException(msgDesc,
                             sqle);
@@ -460,7 +502,8 @@ public class TrinoClient extends BaseClient implements Closeable {
         return ret;
     }
 
-    public List<String> getColumnList(String needle, List<String> catalogs, List<String> schemas, List<String> tables, List<String> columns) throws HadoopException {
+    public List<String> getColumnList(String needle, List<String> catalogs, List<String> schemas, List<String> tables, List<String> columns) throws HadoopException
+    {
         final String ndl = needle;
         final List<String> cats = catalogs;
         final List<String> shms = schemas;
@@ -469,11 +512,13 @@ public class TrinoClient extends BaseClient implements Closeable {
 
         List<String> columnList = Subject.doAs(getLoginSubject(), new PrivilegedAction<List<String>>() {
             @Override
-            public List<String> run() {
+            public List<String> run()
+            {
                 List<String> ret = null;
                 try {
                     ret = getColumns(ndl, cats, shms, tbls, cols);
-                } catch (HadoopException he) {
+                }
+                catch (HadoopException he) {
                     LOG.error("<== TrinoClient getColumnList() :Unable to get the Column List", he);
                     throw he;
                 }
@@ -485,7 +530,8 @@ public class TrinoClient extends BaseClient implements Closeable {
 
     public static Map<String, Object> connectionTest(String serviceName,
                                                      Map<String, String> connectionProperties)
-            throws Exception {
+            throws Exception
+    {
         TrinoClient client = null;
         Map<String, Object> resp = new HashMap<String, Object>();
 
@@ -506,9 +552,11 @@ public class TrinoClient extends BaseClient implements Closeable {
                 String msg = "Connection test succesful";
                 generateResponseDataMap(status, msg, msg, null, null, resp);
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw e;
-        } finally {
+        }
+        finally {
             if (client != null) {
                 client.close();
             }
@@ -517,41 +565,49 @@ public class TrinoClient extends BaseClient implements Closeable {
         return resp;
     }
 
-    public void close() {
+    public void close()
+    {
         Subject.doAs(getLoginSubject(), new PrivilegedAction<Void>() {
-            public Void run() {
+            public Void run()
+            {
                 close(con);
                 return null;
             }
         });
     }
 
-    private void close(Connection con) {
+    private void close(Connection con)
+    {
         try {
             if (con != null) {
                 con.close();
             }
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             LOG.error("Unable to close Trino SQL connection", e);
         }
     }
 
-    public void close(Statement stat) {
+    public void close(Statement stat)
+    {
         try {
             if (stat != null) {
                 stat.close();
             }
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             LOG.error("Unable to close SQL statement", e);
         }
     }
 
-    public void close(ResultSet rs) {
+    public void close(ResultSet rs)
+    {
         try {
             if (rs != null) {
                 rs.close();
             }
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             LOG.error("Unable to close ResultSet", e);
         }
     }
