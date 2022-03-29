@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.ranger.authorization.trino.authorizer;
+package io.trino.plugin.ranger;
 
 import io.trino.spi.connector.CatalogSchemaName;
 import io.trino.spi.connector.CatalogSchemaRoutineName;
@@ -35,8 +35,6 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.ranger.plugin.audit.RangerDefaultAuditHandler;
 import org.apache.ranger.plugin.model.RangerPolicy;
 import org.apache.ranger.plugin.model.RangerServiceDef;
-import org.apache.ranger.plugin.policyengine.RangerAccessRequestImpl;
-import org.apache.ranger.plugin.policyengine.RangerAccessResourceImpl;
 import org.apache.ranger.plugin.policyengine.RangerAccessResult;
 import org.apache.ranger.plugin.service.RangerBasePlugin;
 import org.slf4j.Logger;
@@ -47,18 +45,17 @@ import java.net.URL;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static java.util.Locale.ENGLISH;
-
-public class RangerSystemAccessControl
+public class RangerSystemAccessControlImpl
         implements SystemAccessControl
 {
+    private boolean useUgi;
+
     public static final String RANGER_CONFIG_KEYTAB = "ranger.keytab";
     public static final String RANGER_CONFIG_PRINCIPAL = "ranger.principal";
     public static final String RANGER_CONFIG_USE_UGI = "ranger.use_ugi";
@@ -71,7 +68,7 @@ public class RangerSystemAccessControl
 
     private final RangerBasePlugin rangerPlugin;
 
-    public RangerSystemAccessControl(Map<String, String> config)
+    public RangerSystemAccessControlImpl(Map<String, String> config)
     {
         super();
         useUgi = false;
@@ -846,95 +843,5 @@ public class RangerSystemAccessControl
                     table.getSchemaTableName().getTableName(), Optional.empty()));
         }
         return colRequests;
-    }
-
-    class RangerTrinoResource
-            extends RangerAccessResourceImpl
-    {
-        public static final String KEY_CATALOG = "catalog";
-        public static final String KEY_SCHEMA = "schema";
-        public static final String KEY_TABLE = "table";
-        public static final String KEY_COLUMN = "column";
-        public static final String KEY_USER = "trinouser";
-        public static final String KEY_FUNCTION = "function";
-        public static final String KEY_PROCEDURE = "procedure";
-        public static final String KEY_SYSTEM_PROPERTY = "systemproperty";
-        public static final String KEY_SESSION_PROPERTY = "sessionproperty";
-
-        public RangerTrinoResource()
-        {
-        }
-
-        public RangerTrinoResource(String catalogName, Optional<String> schema, Optional<String> table)
-        {
-            setValue(KEY_CATALOG, catalogName);
-            if (schema.isPresent()) {
-                setValue(KEY_SCHEMA, schema.get());
-            }
-            if (table.isPresent()) {
-                setValue(KEY_TABLE, table.get());
-            }
-        }
-
-        public RangerTrinoResource(String catalogName, Optional<String> schema, Optional<String> table, Optional<String> column)
-        {
-            setValue(KEY_CATALOG, catalogName);
-            if (schema.isPresent()) {
-                setValue(KEY_SCHEMA, schema.get());
-            }
-            if (table.isPresent()) {
-                setValue(KEY_TABLE, table.get());
-            }
-            if (column.isPresent()) {
-                setValue(KEY_COLUMN, column.get());
-            }
-        }
-
-        public String getCatalogName()
-        {
-            return (String) getValue(KEY_CATALOG);
-        }
-
-        public String getTable()
-        {
-            return (String) getValue(KEY_TABLE);
-        }
-
-        public String getCatalog()
-        {
-            return (String) getValue(KEY_CATALOG);
-        }
-
-        public String getSchema()
-        {
-            return (String) getValue(KEY_SCHEMA);
-        }
-
-        public Optional<SchemaTableName> getSchemaTable()
-        {
-            final String schema = getSchema();
-            if (StringUtils.isNotEmpty(schema)) {
-                return Optional.of(new SchemaTableName(schema, Optional.ofNullable(getTable()).orElse("*")));
-            }
-            return Optional.empty();
-        }
-    }
-
-    class RangerTrinoAccessRequest
-            extends RangerAccessRequestImpl
-    {
-        public RangerTrinoAccessRequest(RangerTrinoResource resource,
-                                        String user,
-                                        Set<String> userGroups,
-                                        TrinoAccessType trinoAccessType)
-        {
-            super(resource, trinoAccessType.name().toLowerCase(ENGLISH), user, userGroups, null);
-            setAccessTime(new Date());
-        }
-    }
-
-    enum TrinoAccessType
-    {
-        CREATE, DROP, SELECT, INSERT, DELETE, USE, ALTER, ALL, GRANT, REVOKE, SHOW, IMPERSONATE, EXECUTE
     }
 }

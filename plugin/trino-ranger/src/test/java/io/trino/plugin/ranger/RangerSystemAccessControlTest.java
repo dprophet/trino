@@ -28,6 +28,9 @@ import io.trino.spi.security.SystemSecurityContext;
 import io.trino.spi.security.TrinoPrincipal;
 import io.trino.spi.security.ViewExpression;
 import io.trino.spi.type.VarcharType;
+import org.junit.Assert.assertEquals;
+import org.junit.Assert.assertFalse;
+import org.junit.Assert.assertNotNull;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -40,9 +43,6 @@ import java.util.Set;
 
 import static io.trino.spi.security.PrincipalType.USER;
 import static io.trino.spi.security.Privilege.SELECT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 
 public class RangerSystemAccessControlTest
 {

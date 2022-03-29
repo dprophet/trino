@@ -18,6 +18,7 @@
  */
 package io.trino.plugin.ranger.services;
 
+import io.trino.plugin.ranger.services.client.TrinoResourceManager;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,7 +29,6 @@ import org.apache.ranger.plugin.model.RangerPolicy.RangerPolicyItem;
 import org.apache.ranger.plugin.model.RangerPolicy.RangerPolicyItemAccess;
 import org.apache.ranger.plugin.service.RangerBaseService;
 import org.apache.ranger.plugin.service.ResourceLookupContext;
-import org.apache.ranger.services.trino.client.TrinoResourceManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
