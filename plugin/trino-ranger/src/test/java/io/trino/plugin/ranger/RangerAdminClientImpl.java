@@ -24,11 +24,13 @@ import java.io.File;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 
-public class RangerAdminClientImpl extends AbstractRangerAdminClient {
-    private final static String cacheFilename = "trino-policies.json";
+public class RangerAdminClientImpl
+        extends AbstractRangerAdminClient
+{
+    private static final String cacheFilename = "trino-policies.json";
 
-    public ServicePolicies getServicePoliciesIfUpdated(long lastKnownVersion, long lastActivationTimeInMillis) throws Exception {
-
+    public ServicePolicies getServicePoliciesIfUpdated(long lastKnownVersion, long lastActivationTimeInMillis) throws Exception
+    {
         String basedir = System.getProperty("basedir");
         if (basedir == null) {
             basedir = new File(".").getCanonicalPath();
@@ -39,5 +41,4 @@ public class RangerAdminClientImpl extends AbstractRangerAdminClient {
 
         return gson.fromJson(new String(cacheBytes), ServicePolicies.class);
     }
-
 }

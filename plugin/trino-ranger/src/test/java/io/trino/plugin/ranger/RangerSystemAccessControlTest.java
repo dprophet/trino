@@ -24,26 +24,29 @@ import io.trino.spi.connector.CatalogSchemaTableName;
 import io.trino.spi.connector.SchemaTableName;
 import io.trino.spi.security.AccessDeniedException;
 import io.trino.spi.security.Identity;
-import io.trino.spi.security.TrinoPrincipal;
 import io.trino.spi.security.SystemSecurityContext;
-
-import static io.trino.spi.security.PrincipalType.USER;
-import static io.trino.spi.security.Privilege.SELECT;
-import static org.junit.Assert.*;
-
+import io.trino.spi.security.TrinoPrincipal;
 import io.trino.spi.security.ViewExpression;
 import io.trino.spi.type.VarcharType;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import javax.security.auth.kerberos.KerberosPrincipal;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public class RangerSystemAccessControlTest {
-    static RangerSystemAccessControl accessControlManager = null;
+import static io.trino.spi.security.PrincipalType.USER;
+import static io.trino.spi.security.Privilege.SELECT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+
+public class RangerSystemAccessControlTest
+{
+    static RangerSystemAccessControl accessControlManager;
 
     private static final Identity alice = Identity.ofUser("alice");
     private static final Identity admin = Identity.ofUser("admin");
@@ -65,18 +68,21 @@ public class RangerSystemAccessControlTest {
     private static final String functionName = new String("function");
 
     @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
+    public static void setUpBeforeClass() throws Exception
+    {
         Map<String, String> config = new HashMap<>();
         accessControlManager = new RangerSystemAccessControl(config);
     }
 
     @Test
     @SuppressWarnings("PMD")
-    public void testCanSetUserOperations() {
+    public void testCanSetUserOperations()
+    {
         try {
             accessControlManager.checkCanImpersonateUser(context(alice), bob.getUser());
             throw new AssertionError("expected AccessDeniedExeption");
-        } catch (AccessDeniedException expected) {
+        }
+        catch (AccessDeniedException expected) {
         }
 
         accessControlManager.checkCanImpersonateUser(context(admin), bob.getUser());
@@ -84,13 +90,14 @@ public class RangerSystemAccessControlTest {
         try {
             accessControlManager.checkCanImpersonateUser(context(kerberosInvalidAlice), bob.getUser());
             throw new AssertionError("expected AccessDeniedExeption");
-        } catch (AccessDeniedException expected) {
         }
-
+        catch (AccessDeniedException expected) {
+        }
     }
 
     @Test
-    public void testCatalogOperations() {
+    public void testCatalogOperations()
+    {
         assertEquals(accessControlManager.filterCatalogs(context(alice), allCatalogs), allCatalogs);
         Set<String> bobCatalogs = ImmutableSet.of("open-to-all", "all-allowed");
         assertEquals(accessControlManager.filterCatalogs(context(bob), allCatalogs), bobCatalogs);
@@ -100,8 +107,8 @@ public class RangerSystemAccessControlTest {
 
     @Test
     @SuppressWarnings("PMD")
-    public void testSchemaOperations() {
-
+    public void testSchemaOperations()
+    {
         Set<String> aliceSchemas = ImmutableSet.of("schema");
         assertEquals(accessControlManager.filterSchemas(context(alice), aliceCatalog, aliceSchemas), aliceSchemas);
         assertEquals(accessControlManager.filterSchemas(context(bob), "alice-catalog", aliceSchemas), ImmutableSet.of());
@@ -113,7 +120,8 @@ public class RangerSystemAccessControlTest {
 
         try {
             accessControlManager.checkCanCreateSchema(context(bob), aliceSchema);
-        } catch (AccessDeniedException expected) {
+        }
+        catch (AccessDeniedException expected) {
         }
 
         accessControlManager.checkCanSetSchemaAuthorization(context(alice), aliceSchema, new TrinoPrincipal(USER, "principal"));
@@ -122,7 +130,8 @@ public class RangerSystemAccessControlTest {
 
     @Test
     @SuppressWarnings("PMD")
-    public void testTableOperations() {
+    public void testTableOperations()
+    {
         Set<SchemaTableName> aliceTables = ImmutableSet.of(new SchemaTableName("schema", "table"));
         assertEquals(accessControlManager.filterTables(context(alice), aliceCatalog, aliceTables), aliceTables);
         assertEquals(accessControlManager.filterTables(context(bob), "alice-catalog", aliceTables), ImmutableSet.of());
@@ -134,16 +143,17 @@ public class RangerSystemAccessControlTest {
         accessControlManager.checkCanDeleteFromTable(context(alice), aliceTable);
         accessControlManager.checkCanRenameColumn(context(alice), aliceTable);
 
-
         try {
             accessControlManager.checkCanCreateTable(context(bob), aliceTable);
-        } catch (AccessDeniedException expected) {
+        }
+        catch (AccessDeniedException expected) {
         }
     }
 
     @Test
     @SuppressWarnings("PMD")
-    public void testViewOperations() {
+    public void testViewOperations()
+    {
         accessControlManager.checkCanCreateView(context(alice), aliceView);
         accessControlManager.checkCanDropView(context(alice), aliceView);
         accessControlManager.checkCanSelectFromColumns(context(alice), aliceView, ImmutableSet.of());
@@ -155,13 +165,15 @@ public class RangerSystemAccessControlTest {
 
         try {
             accessControlManager.checkCanCreateView(context(bob), aliceView);
-        } catch (AccessDeniedException expected) {
+        }
+        catch (AccessDeniedException expected) {
         }
     }
 
     @Test
     @SuppressWarnings("PMD")
-    public void testMisc() {
+    public void testMisc()
+    {
         assertEquals(accessControlManager.filterViewQueryOwnedBy(context(alice), queryOwners), queryOwners);
 
         // check {type} / {col} replacement
@@ -182,7 +194,8 @@ public class RangerSystemAccessControlTest {
         accessControlManager.checkCanExecuteProcedure(context(alice), aliceProcedure);
     }
 
-    private SystemSecurityContext context(Identity id) {
+    private SystemSecurityContext context(Identity id)
+    {
         return new SystemSecurityContext(id, Optional.empty());
     }
 }
