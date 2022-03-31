@@ -176,11 +176,11 @@ public class RangerSystemAccessControl
     }
 
     @Override
-    public void checkCanCreateTable(SystemSecurityContext context, CatalogSchemaTableName table)
+    public void checkCanCreateTable(SystemSecurityContext context, CatalogSchemaTableName table, Map<String, Object> properties)
     {
         try {
             activatePluginClassLoader();
-            systemAccessControlImpl.checkCanCreateTable(context, table);
+            systemAccessControlImpl.checkCanCreateTable(context, table, properties);
         }
         finally {
             deactivatePluginClassLoader();

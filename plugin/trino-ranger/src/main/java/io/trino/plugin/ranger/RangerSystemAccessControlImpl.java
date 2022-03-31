@@ -429,7 +429,7 @@ public class RangerSystemAccessControlImpl
      * Create table is verified on schema level
      */
     @Override
-    public void checkCanCreateTable(SystemSecurityContext context, CatalogSchemaTableName table)
+    public void checkCanCreateTable(SystemSecurityContext context, CatalogSchemaTableName table, Map<String, Object> properties)
     {
         if (!hasPermission(createResource(table.getCatalogName(), table.getSchemaTableName().getSchemaName()), context, TrinoAccessType.CREATE)) {
             LOG.debug("RangerSystemAccessControl.checkCanCreateTable(" + table.getSchemaTableName().getTableName() + ") denied");

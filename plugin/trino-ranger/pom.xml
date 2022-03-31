@@ -32,6 +32,7 @@
         <deps.carrotsearch-hppc.version>0.8.1</deps.carrotsearch-hppc.version>
         <deps.apache-httpasyncclient.version>4.1.4</deps.apache-httpasyncclient.version>
         <deps.apache-httpcore.version>4.4.12</deps.apache-httpcore.version>
+        <deps.junit.version>4.12</deps.junit.version>
     </properties>
 
     <dependencies>
@@ -328,6 +329,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <version>${deps.junit.version}</version>
             <scope>test</scope>
         </dependency>
 

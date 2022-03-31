@@ -28,9 +28,7 @@ import io.trino.spi.security.SystemSecurityContext;
 import io.trino.spi.security.TrinoPrincipal;
 import io.trino.spi.security.ViewExpression;
 import io.trino.spi.type.VarcharType;
-import org.junit.Assert.assertEquals;
-import org.junit.Assert.assertFalse;
-import org.junit.Assert.assertNotNull;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -46,7 +44,7 @@ import static io.trino.spi.security.Privilege.SELECT;
 
 public class RangerSystemAccessControlTest
 {
-    static RangerSystemAccessControl accessControlManager;
+    static RangerSystemAccessControlImpl accessControlManager;
 
     private static final Identity alice = Identity.ofUser("alice");
     private static final Identity admin = Identity.ofUser("admin");
@@ -71,7 +69,7 @@ public class RangerSystemAccessControlTest
     public static void setUpBeforeClass() throws Exception
     {
         Map<String, String> config = new HashMap<>();
-        accessControlManager = new RangerSystemAccessControl(config);
+        accessControlManager = new RangerSystemAccessControlImpl(config);
     }
 
     @Test
@@ -98,9 +96,9 @@ public class RangerSystemAccessControlTest
     @Test
     public void testCatalogOperations()
     {
-        assertEquals(accessControlManager.filterCatalogs(context(alice), allCatalogs), allCatalogs);
+        Assert.assertEquals(accessControlManager.filterCatalogs(context(alice), allCatalogs), allCatalogs);
         Set<String> bobCatalogs = ImmutableSet.of("open-to-all", "all-allowed");
-        assertEquals(accessControlManager.filterCatalogs(context(bob), allCatalogs), bobCatalogs);
+        Assert.assertEquals(accessControlManager.filterCatalogs(context(bob), allCatalogs), bobCatalogs);
         //Set<String> nonAsciiUserCatalogs = ImmutableSet.of("open-to-all", "all-allowed", "\u0200\u0200\u0200");
         //assertEquals(accessControlManager.filterCatalogs(context(nonAsciiUser), allCatalogs), nonAsciiUserCatalogs);
     }
@@ -110,8 +108,8 @@ public class RangerSystemAccessControlTest
     public void testSchemaOperations()
     {
         Set<String> aliceSchemas = ImmutableSet.of("schema");
-        assertEquals(accessControlManager.filterSchemas(context(alice), aliceCatalog, aliceSchemas), aliceSchemas);
-        assertEquals(accessControlManager.filterSchemas(context(bob), "alice-catalog", aliceSchemas), ImmutableSet.of());
+        Assert.assertEquals(accessControlManager.filterSchemas(context(alice), aliceCatalog, aliceSchemas), aliceSchemas);
+        Assert.assertEquals(accessControlManager.filterSchemas(context(bob), "alice-catalog", aliceSchemas), ImmutableSet.of());
 
         accessControlManager.checkCanCreateSchema(context(alice), aliceSchema);
         accessControlManager.checkCanDropSchema(context(alice), aliceSchema);
@@ -133,10 +131,10 @@ public class RangerSystemAccessControlTest
     public void testTableOperations()
     {
         Set<SchemaTableName> aliceTables = ImmutableSet.of(new SchemaTableName("schema", "table"));
-        assertEquals(accessControlManager.filterTables(context(alice), aliceCatalog, aliceTables), aliceTables);
-        assertEquals(accessControlManager.filterTables(context(bob), "alice-catalog", aliceTables), ImmutableSet.of());
+        Assert.assertEquals(accessControlManager.filterTables(context(alice), aliceCatalog, aliceTables), aliceTables);
+        Assert.assertEquals(accessControlManager.filterTables(context(bob), "alice-catalog", aliceTables), ImmutableSet.of());
 
-        accessControlManager.checkCanCreateTable(context(alice), aliceTable);
+        accessControlManager.checkCanCreateTable(context(alice), aliceTable, Map.of());
         accessControlManager.checkCanDropTable(context(alice), aliceTable);
         accessControlManager.checkCanSelectFromColumns(context(alice), aliceTable, ImmutableSet.of());
         accessControlManager.checkCanInsertIntoTable(context(alice), aliceTable);
@@ -144,7 +142,7 @@ public class RangerSystemAccessControlTest
         accessControlManager.checkCanRenameColumn(context(alice), aliceTable);
 
         try {
-            accessControlManager.checkCanCreateTable(context(bob), aliceTable);
+            accessControlManager.checkCanCreateTable(context(bob), aliceTable, Map.of());
         }
         catch (AccessDeniedException expected) {
         }
@@ -174,20 +172,20 @@ public class RangerSystemAccessControlTest
     @SuppressWarnings("PMD")
     public void testMisc()
     {
-        assertEquals(accessControlManager.filterViewQueryOwnedBy(context(alice), queryOwners), queryOwners);
+        Assert.assertEquals(accessControlManager.filterViewQueryOwnedBy(context(alice), queryOwners), queryOwners);
 
         // check {type} / {col} replacement
         final VarcharType varcharType = VarcharType.createVarcharType(20);
 
         Optional<ViewExpression> ret = accessControlManager.getColumnMask(context(alice), aliceTable, "cast_me", varcharType);
-        assertNotNull(ret.get());
-        assertEquals(ret.get().getExpression(), "cast cast_me as varchar(20)");
+        Assert.assertNotNull(ret.get());
+        Assert.assertEquals(ret.get().getExpression(), "cast cast_me as varchar(20)");
 
         ret = accessControlManager.getColumnMask(context(alice), aliceTable, "do-not-cast-me", varcharType);
-        assertFalse(ret.isPresent());
+        Assert.assertFalse(ret.isPresent());
 
         ret = accessControlManager.getRowFilter(context(alice), aliceTable);
-        assertFalse(ret.isPresent());
+        Assert.assertFalse(ret.isPresent());
 
         accessControlManager.checkCanExecuteFunction(context(alice), functionName);
         accessControlManager.checkCanGrantExecuteFunctionPrivilege(context(alice), functionName, new TrinoPrincipal(USER, "grantee"), true);
