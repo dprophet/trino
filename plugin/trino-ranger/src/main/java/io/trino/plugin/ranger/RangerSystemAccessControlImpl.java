@@ -73,7 +73,7 @@ public class RangerSystemAccessControlImpl
         super();
         useUgi = false;
 
-        Configuration hadoopConf = new Configuration();
+        Configuration hadoopConf = new Configuration(false);
         if (config.get(RANGER_CONFIG_HADOOP_CONFIG) != null) {
             URL url = hadoopConf.getResource(config.get(RANGER_CONFIG_HADOOP_CONFIG));
             if (url == null) {

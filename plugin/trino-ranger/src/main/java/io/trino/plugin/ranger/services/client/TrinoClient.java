@@ -94,7 +94,7 @@ public class TrinoClient
 
         if (driverClassName != null) {
             try {
-                Driver driver = (Driver) Class.forName(driverClassName).newInstance();
+                Driver driver = (Driver) Class.forName(driverClassName).getConstructor().newInstance();
                 DriverManager.registerDriver(driver);
             }
             catch (SQLException e) {

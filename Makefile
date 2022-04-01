@@ -8,11 +8,16 @@ pull:
 
 rpm:
 	rm -f build.txt
+	rm -rf core/trino-server-rpm/target
 	mvn -e -X install -DskipTests -pl '!docs' 2>&1 | tee build.txt
 
 ranger:
-	rm -f build.txt
+	rm -f build_ranger.txt
 	mvn -e -X install -DskipTests -pl plugin/trino-ranger 2>&1 | tee build_ranger.txt
+
+resume:
+	rm -f build_ranger.txt
+	mvn -e -X install -DskipTests -pl plugin/trino-ranger -rf :trino-ranger 2>&1 | tee build_ranger.txt
 
 clean:
 	mvn -e -X clean

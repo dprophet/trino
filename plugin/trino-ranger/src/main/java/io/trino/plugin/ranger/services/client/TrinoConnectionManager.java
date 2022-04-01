@@ -18,7 +18,7 @@
  */
 package io.trino.plugin.ranger.services.client;
 
-import org.apache.log4j.Logger;
+import io.airlift.log.Logger;
 import org.apache.ranger.plugin.util.TimedEventUtil;
 
 import java.util.Map;
@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 public class TrinoConnectionManager
 {
-    private static final Logger LOG = Logger.getLogger(TrinoConnectionManager.class);
+    private static final Logger LOG = Logger.get(TrinoConnectionManager.class);
 
     protected ConcurrentMap<String, TrinoClient> trinoConnectionCache;
     protected ConcurrentMap<String, Boolean> repoConnectStatusMap;

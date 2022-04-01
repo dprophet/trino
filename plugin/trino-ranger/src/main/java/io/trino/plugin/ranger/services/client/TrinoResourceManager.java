@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.Locale.ENGLISH;
+
 public final class TrinoResourceManager
 {
     private static final Log LOG = LogFactory.getLog(TrinoResourceManager.class);
@@ -90,7 +92,7 @@ public final class TrinoResourceManager
                 tableList = resourceMap.get(TABLE);
                 columnList = resourceMap.get(COLUMN);
             }
-            switch (resource.trim().toLowerCase()) {
+            switch (resource.trim().toLowerCase(ENGLISH)) {
                 case CATALOG:
                     catalogName = userInput;
                     break;
