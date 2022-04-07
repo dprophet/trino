@@ -37,7 +37,8 @@ public class RangerSystemAccessControl
         implements SystemAccessControl
 {
     private static final String RANGER_PLUGIN_TYPE = "trino";
-    private static final String RANGER_TRINO_AUTHORIZER_IMPL_CLASSNAME = "io.trino.plugin.ranger.RangerSystemAccessControl";
+    // Apache Ranger will be the default authorizer if no authorizers match your catalog.
+    private static final String RANGER_TRINO_AUTHORIZER_IMPL_CLASSNAME = "io.trino.plugin.ranger.RangerSystemAccessControlImpl";
 
     private final RangerPluginClassLoader rangerPluginClassLoader;
     private final SystemAccessControl systemAccessControlImpl;

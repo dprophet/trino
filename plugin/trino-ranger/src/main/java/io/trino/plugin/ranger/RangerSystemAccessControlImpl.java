@@ -18,6 +18,7 @@
  */
 package io.trino.plugin.ranger;
 
+import io.trino.spi.TrinoException;
 import io.trino.spi.connector.CatalogSchemaName;
 import io.trino.spi.connector.CatalogSchemaRoutineName;
 import io.trino.spi.connector.CatalogSchemaTableName;
@@ -50,6 +51,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import static io.trino.spi.StandardErrorCode.CONFIGURATION_INVALID;
 
 public class RangerSystemAccessControlImpl
         implements SystemAccessControl
@@ -90,6 +93,9 @@ public class RangerSystemAccessControlImpl
             }
             if (url != null) {
                 hadoopConf.addResource(url);
+            }
+            else {
+                throw invalidRangerConfigFile(config);
             }
         }
 
@@ -843,5 +849,12 @@ public class RangerSystemAccessControlImpl
                     table.getSchemaTableName().getTableName(), Optional.empty()));
         }
         return colRequests;
+    }
+
+    private static TrinoException invalidRangerConfigFile(Map<String, String> config)
+    {
+        return new TrinoException(
+            CONFIGURATION_INVALID,
+            String.format("%s must be specified in the ranger configurations. Value was '%s'", RANGER_CONFIG_HADOOP_CONFIG, config.get(RANGER_CONFIG_HADOOP_CONFIG)));
     }
 }
