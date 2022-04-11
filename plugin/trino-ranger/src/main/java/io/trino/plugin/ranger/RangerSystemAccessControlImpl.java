@@ -33,6 +33,7 @@ import io.trino.spi.type.Type;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.ranger.authorization.hadoop.config.RangerConfiguration;
 import org.apache.ranger.plugin.audit.RangerDefaultAuditHandler;
 import org.apache.ranger.plugin.model.RangerPolicy;
 import org.apache.ranger.plugin.model.RangerServiceDef;
@@ -41,8 +42,10 @@ import org.apache.ranger.plugin.service.RangerBasePlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.net.MalformedURLException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,11 +61,18 @@ public class RangerSystemAccessControlImpl
         implements SystemAccessControl
 {
     private boolean useUgi;
+    private String auditConfig;
+    private String hadoopConfig;
+    private String policyManagerSSLConfig;
+    private String securityConfig;
 
     public static final String RANGER_CONFIG_KEYTAB = "ranger.keytab";
     public static final String RANGER_CONFIG_PRINCIPAL = "ranger.principal";
     public static final String RANGER_CONFIG_USE_UGI = "ranger.use_ugi";
     public static final String RANGER_CONFIG_HADOOP_CONFIG = "ranger.hadoop_config";
+    public static final String RANGER_AUDIT_CONFIG = "ranger.audit_resource";
+    public static final String RANGER_SECURITY_CONFIG = "ranger.security_resource";
+    public static final String RANGER_POLICY_MANAGER_SSL_CONFIG = "ranger.policy_manager_ssl_resource";
     public static final String RANGER_TRINO_DEFAULT_HADOOP_CONF = "trino-ranger-site.xml";
     public static final String RANGER_TRINO_SERVICETYPE = "trino";
     public static final String RANGER_TRINO_APPID = "trino";
@@ -75,28 +85,20 @@ public class RangerSystemAccessControlImpl
     {
         super();
         useUgi = false;
+        rangerPlugin = new RangerBasePlugin(RANGER_TRINO_SERVICETYPE, RANGER_TRINO_APPID);
 
         Configuration hadoopConf = new Configuration(false);
         if (config.get(RANGER_CONFIG_HADOOP_CONFIG) != null) {
-            URL url = hadoopConf.getResource(config.get(RANGER_CONFIG_HADOOP_CONFIG));
-            if (url == null) {
-                LOG.warn("Hadoop config " + config.get(RANGER_CONFIG_HADOOP_CONFIG) + " not found");
+            hadoopConfig = config.get(RANGER_CONFIG_HADOOP_CONFIG);
+            URL url = getFileLocation(config.get(RANGER_CONFIG_HADOOP_CONFIG), Optional.of(RANGER_CONFIG_HADOOP_CONFIG));
+            if (url == null ) {
+                throw invalidRangerConfigFile(hadoopConfig);
             }
-            else {
-                hadoopConf.addResource(url);
-            }
+            hadoopConf.addResource(url);
+            rangerPlugin.getConfig().addResource(url);
         }
         else {
-            URL url = hadoopConf.getResource(RANGER_TRINO_DEFAULT_HADOOP_CONF);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Trying to load Hadoop config from " + url + " (can be null)");
-            }
-            if (url != null) {
-                hadoopConf.addResource(url);
-            }
-            else {
-                throw invalidRangerConfigFile(config);
-            }
+            throw invalidRangerConfigEntry(config, RANGER_CONFIG_HADOOP_CONFIG);
         }
 
         UserGroupInformation.setConfiguration(hadoopConf);
@@ -120,7 +122,42 @@ public class RangerSystemAccessControlImpl
             useUgi = true;
         }
 
-        rangerPlugin = new RangerBasePlugin(RANGER_TRINO_SERVICETYPE, RANGER_TRINO_APPID);
+        if (config.get(RANGER_AUDIT_CONFIG) != null) {
+            auditConfig = config.get(RANGER_AUDIT_CONFIG);
+            URL url = getFileLocation(auditConfig, Optional.of(RANGER_AUDIT_CONFIG));
+            if (url == null ) {
+                throw invalidRangerConfigFile(auditConfig);
+            }
+            rangerPlugin.getConfig().addResource(auditConfig);
+        }
+        else {
+            throw invalidRangerConfigEntry(config, RANGER_AUDIT_CONFIG);
+        }
+
+        if (config.get(RANGER_SECURITY_CONFIG) != null) {
+            securityConfig = config.get(RANGER_SECURITY_CONFIG);
+            URL url = getFileLocation(securityConfig, Optional.of(RANGER_SECURITY_CONFIG));
+            if (url == null ) {
+                throw invalidRangerConfigFile(securityConfig);
+            }
+            rangerPlugin.getConfig().addResource(securityConfig);
+        }
+        else {
+            throw invalidRangerConfigEntry(config, RANGER_SECURITY_CONFIG);
+        }
+
+        if (config.get(RANGER_POLICY_MANAGER_SSL_CONFIG) != null) {
+            policyManagerSSLConfig = config.get(RANGER_POLICY_MANAGER_SSL_CONFIG);
+            URL url = getFileLocation(policyManagerSSLConfig, Optional.of(RANGER_AUDIT_CONFIG));
+            if (url == null ) {
+                throw invalidRangerConfigFile(policyManagerSSLConfig);
+            }
+            rangerPlugin.getConfig().addResource(policyManagerSSLConfig);
+        }
+        else {
+            throw invalidRangerConfigEntry(config, RANGER_POLICY_MANAGER_SSL_CONFIG);
+        }
+
         rangerPlugin.init();
         rangerPlugin.setResultProcessor(new RangerDefaultAuditHandler());
     }
@@ -851,10 +888,56 @@ public class RangerSystemAccessControlImpl
         return colRequests;
     }
 
-    private static TrinoException invalidRangerConfigFile(Map<String, String> config)
+    private URL getFileLocation(String fileName,  Optional<String> configEntry) {
+        URL lurl = null;
+
+        if (LOG.isDebugEnabled()) {
+            if (configEntry.isPresent()) {
+                LOG.debug("Trying to load config(" + configEntry.get() + " from " + fileName + " (cannot be null)");
+            }
+            else {
+                LOG.debug("Trying to load config from " + fileName + " (cannot be null)");
+            }
+
+        }
+
+        if (!StringUtils.isEmpty(fileName)) {
+            lurl = RangerConfiguration.class.getClassLoader().getResource(fileName);
+
+            if (lurl == null ) {
+                lurl = RangerConfiguration.class.getClassLoader().getResource("/" + fileName);
+            }
+
+            if (lurl == null ) {
+                File f = new File(fileName);
+                if (f.exists()) {
+                    try {
+                        lurl=f.toURI().toURL();
+                    } catch (MalformedURLException e) {
+                        LOG.error("Unable to load the resource name [" + fileName + "]. Ignoring the resource:" + f.getPath());
+                    }
+                } else {
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug("Conf file path " + fileName + " does not exists");
+                    }
+                }
+            }
+        }
+        return lurl;
+    }
+
+    private static TrinoException invalidRangerConfigFile(String fileName)
     {
         return new TrinoException(
             CONFIGURATION_INVALID,
-            String.format("%s must be specified in the ranger configurations. Value was '%s'", RANGER_CONFIG_HADOOP_CONFIG, config.get(RANGER_CONFIG_HADOOP_CONFIG)));
+            String.format("%s is not a valid file", fileName));
     }
+
+    private static TrinoException invalidRangerConfigEntry(Map<String, String> config, String configEntry)
+    {
+        return new TrinoException(
+                CONFIGURATION_INVALID,
+                String.format("%s must be specified in the ranger configurations. Value was '%s'", configEntry, config.get(configEntry)));
+    }
+
 }

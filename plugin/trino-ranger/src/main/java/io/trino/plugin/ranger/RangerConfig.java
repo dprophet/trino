@@ -27,6 +27,9 @@ public class RangerConfig
     private String principal;
     private boolean useUgi;
     private String hadoopConfigPath;
+    private String auditResourcesConfigPath;
+    private String securityResourcesConfigPath;
+    private String policyManagerSSLConfigPath;
 
     public RangerConfig()
     {
@@ -87,5 +90,47 @@ public class RangerConfig
     public String getHadoopConfigPath()
     {
         return hadoopConfigPath;
+    }
+
+    @Config("ranger.audit_resource")
+    @ConfigDescription("Full path to the audit config files (ranger.audit_resource)")
+    @SuppressWarnings("unused")
+    public RangerConfig setAuditResourcesConfigPath(String auditResourcesConfigPath)
+    {
+        this.auditResourcesConfigPath = auditResourcesConfigPath;
+        return this;
+    }
+
+    public String getAuditResourcesConfigPath()
+    {
+        return auditResourcesConfigPath;
+    }
+
+    @Config("ranger.security_resource")
+    @ConfigDescription("Full path to the security config file (ranger-trino-security.xml)")
+    @SuppressWarnings("unused")
+    public RangerConfig setSecurityResourcesConfigPath(String securityResourcesConfigPath)
+    {
+        this.securityResourcesConfigPath = securityResourcesConfigPath;
+        return this;
+    }
+
+    public String getSecurityResourcesConfigPath()
+    {
+        return securityResourcesConfigPath;
+    }
+
+    @Config("ranger.policy_manager_ssl_resource")
+    @ConfigDescription("Full path to the ranger policy manager config file (ranger-policymgr-ssl.xml)")
+    @SuppressWarnings("unused")
+    public RangerConfig setPolicyManagerSSLConfigPath(String policyManagerSSLConfigPath)
+    {
+        this.policyManagerSSLConfigPath = policyManagerSSLConfigPath;
+        return this;
+    }
+
+    public String getPolicyManagerSSLConfigPath()
+    {
+        return policyManagerSSLConfigPath;
     }
 }

@@ -66,6 +66,18 @@ public class RangerSystemAccessControl
                 configMap.put("ranger.hadoop_config", config.getHadoopConfigPath());
             }
 
+            if (config.getAuditResourcesConfigPath() != null) {
+                configMap.put("ranger.audit_resource", config.getAuditResourcesConfigPath());
+            }
+
+            if (config.getSecurityResourcesConfigPath() != null) {
+                configMap.put("ranger.security_resource", config.getSecurityResourcesConfigPath());
+            }
+
+            if (config.getPolicyManagerSSLConfigPath() != null) {
+                configMap.put("ranger.policy_manager_ssl_resource", config.getPolicyManagerSSLConfigPath());
+            }
+
             systemAccessControlImpl = cls.getDeclaredConstructor(Map.class).newInstance(configMap);
         }
         catch (Exception e) {
