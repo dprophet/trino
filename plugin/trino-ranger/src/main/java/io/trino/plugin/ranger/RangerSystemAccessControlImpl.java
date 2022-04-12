@@ -60,7 +60,9 @@ import static io.trino.spi.StandardErrorCode.CONFIGURATION_INVALID;
 public class RangerSystemAccessControlImpl
         implements SystemAccessControl
 {
+    // User group information
     private boolean useUgi;
+    // These strings hold the full path to the .xml configuration files
     private String auditConfig;
     private String hadoopConfig;
     private String policyManagerSSLConfig;
@@ -95,6 +97,8 @@ public class RangerSystemAccessControlImpl
                 throw invalidRangerConfigFile(hadoopConfig);
             }
             hadoopConf.addResource(url);
+            // This resource is more for Hadoop but lets add to the general book keeping config. Use false so parsing
+            // isnt restricted to the directory and subdirectory where the .jar is installed.
             rangerPlugin.getConfig().addResource(url);
         }
         else {
@@ -128,7 +132,8 @@ public class RangerSystemAccessControlImpl
             if (url == null ) {
                 throw invalidRangerConfigFile(auditConfig);
             }
-            rangerPlugin.getConfig().addResource(auditConfig);
+            // Add the resources. Make sure we use false or the parsing will be restricted to the .class directory.
+            rangerPlugin.getConfig().addResource(url, false);
         }
         else {
             throw invalidRangerConfigEntry(config, RANGER_AUDIT_CONFIG);
@@ -140,7 +145,8 @@ public class RangerSystemAccessControlImpl
             if (url == null ) {
                 throw invalidRangerConfigFile(securityConfig);
             }
-            rangerPlugin.getConfig().addResource(securityConfig);
+            // Add the resources. Make sure we use false or the parsing will be restricted to the .class install directory.
+            rangerPlugin.getConfig().addResource(url, false);
         }
         else {
             throw invalidRangerConfigEntry(config, RANGER_SECURITY_CONFIG);
@@ -152,12 +158,14 @@ public class RangerSystemAccessControlImpl
             if (url == null ) {
                 throw invalidRangerConfigFile(policyManagerSSLConfig);
             }
-            rangerPlugin.getConfig().addResource(policyManagerSSLConfig);
+            // Add the resources. Make sure we use false or the parsing will be restricted to the .class install directory.
+            rangerPlugin.getConfig().addResource(url, false);
         }
         else {
             throw invalidRangerConfigEntry(config, RANGER_POLICY_MANAGER_SSL_CONFIG);
         }
 
+        // init() will initialize the loading of the configurations from the above added resources
         rangerPlugin.init();
         rangerPlugin.setResultProcessor(new RangerDefaultAuditHandler());
     }
