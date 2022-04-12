@@ -26,6 +26,7 @@ public class RangerConfig
     private String keytab;
     private String principal;
     private boolean useUgi;
+    private String serviceName;
     private String hadoopConfigPath;
     private String auditResourcesConfigPath;
     private String securityResourcesConfigPath;
@@ -76,6 +77,20 @@ public class RangerConfig
     {
         this.useUgi = useUgi;
         return this;
+    }
+
+    @Config("ranger.service_name")
+    @ConfigDescription("The name of the service defined in the Ranger UI")
+    @SuppressWarnings("unused")
+    public RangerConfig setServiceName(String serviceName)
+    {
+        this.serviceName = serviceName;
+        return this;
+    }
+
+    public String getServiceName()
+    {
+        return serviceName;
     }
 
     @Config("ranger.hadoop_config")

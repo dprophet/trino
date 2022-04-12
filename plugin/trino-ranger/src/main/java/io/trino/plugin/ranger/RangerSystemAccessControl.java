@@ -78,6 +78,10 @@ public class RangerSystemAccessControl
                 configMap.put("ranger.policy_manager_ssl_resource", config.getPolicyManagerSSLConfigPath());
             }
 
+            if (config.getServiceName() != null) {
+                configMap.put("ranger.service_name", config.getServiceName());
+            }
+
             systemAccessControlImpl = cls.getDeclaredConstructor(Map.class).newInstance(configMap);
         }
         catch (Exception e) {
