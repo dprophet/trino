@@ -78,6 +78,7 @@ public class RangerSystemAccessControlImpl
     public static final String RANGER_TRINO_DEFAULT_HADOOP_CONF = "trino-ranger-site.xml";
     public static final String RANGER_TRINO_SERVICETYPE = "trino";
     public static final String RANGER_TRINO_APPID = "trino";
+    public static final String RANGER_SERVICE_NAME = "ranger.service_name";
 
     private static final Logger LOG = LoggerFactory.getLogger(RangerSystemAccessControl.class);
 
@@ -87,7 +88,12 @@ public class RangerSystemAccessControlImpl
     {
         super();
         useUgi = false;
-        rangerPlugin = new RangerBasePlugin(RANGER_TRINO_SERVICETYPE, RANGER_TRINO_APPID);
+        if (config.get(RANGER_SERVICE_NAME) != null) {
+            rangerPlugin = new RangerBasePlugin(RANGER_TRINO_SERVICETYPE, config.get(RANGER_SERVICE_NAME), RANGER_TRINO_APPID);
+        }
+        else {
+            throw invalidRangerConfigEntry(config, RANGER_SERVICE_NAME);
+        }
 
         Configuration hadoopConf = new Configuration(false);
         if (config.get(RANGER_CONFIG_HADOOP_CONFIG) != null) {
