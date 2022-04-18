@@ -44,8 +44,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -99,7 +99,7 @@ public class RangerSystemAccessControlImpl
         if (config.get(RANGER_CONFIG_HADOOP_CONFIG) != null) {
             hadoopConfig = config.get(RANGER_CONFIG_HADOOP_CONFIG);
             URL url = getFileLocation(config.get(RANGER_CONFIG_HADOOP_CONFIG), Optional.of(RANGER_CONFIG_HADOOP_CONFIG));
-            if (url == null ) {
+            if (url == null) {
                 throw invalidRangerConfigFile(hadoopConfig);
             }
             hadoopConf.addResource(url);
@@ -135,7 +135,7 @@ public class RangerSystemAccessControlImpl
         if (config.get(RANGER_AUDIT_CONFIG) != null) {
             auditConfig = config.get(RANGER_AUDIT_CONFIG);
             URL url = getFileLocation(auditConfig, Optional.of(RANGER_AUDIT_CONFIG));
-            if (url == null ) {
+            if (url == null) {
                 throw invalidRangerConfigFile(auditConfig);
             }
             // Add the resources. Make sure we use false or the parsing will be restricted to the .class directory.
@@ -148,7 +148,7 @@ public class RangerSystemAccessControlImpl
         if (config.get(RANGER_SECURITY_CONFIG) != null) {
             securityConfig = config.get(RANGER_SECURITY_CONFIG);
             URL url = getFileLocation(securityConfig, Optional.of(RANGER_SECURITY_CONFIG));
-            if (url == null ) {
+            if (url == null) {
                 throw invalidRangerConfigFile(securityConfig);
             }
             // Add the resources. Make sure we use false or the parsing will be restricted to the .class install directory.
@@ -161,7 +161,7 @@ public class RangerSystemAccessControlImpl
         if (config.get(RANGER_POLICY_MANAGER_SSL_CONFIG) != null) {
             policyManagerSSLConfig = config.get(RANGER_POLICY_MANAGER_SSL_CONFIG);
             URL url = getFileLocation(policyManagerSSLConfig, Optional.of(RANGER_AUDIT_CONFIG));
-            if (url == null ) {
+            if (url == null) {
                 throw invalidRangerConfigFile(policyManagerSSLConfig);
             }
             // Add the resources. Make sure we use false or the parsing will be restricted to the .class install directory.
@@ -902,7 +902,8 @@ public class RangerSystemAccessControlImpl
         return colRequests;
     }
 
-    private URL getFileLocation(String fileName,  Optional<String> configEntry) {
+    private URL getFileLocation(String fileName, Optional<String> configEntry)
+    {
         URL lurl = null;
 
         if (LOG.isDebugEnabled()) {
@@ -912,26 +913,27 @@ public class RangerSystemAccessControlImpl
             else {
                 LOG.debug("Trying to load config from " + fileName + " (cannot be null)");
             }
-
         }
 
         if (!StringUtils.isEmpty(fileName)) {
             lurl = RangerConfiguration.class.getClassLoader().getResource(fileName);
 
-            if (lurl == null ) {
+            if (lurl == null) {
                 lurl = RangerConfiguration.class.getClassLoader().getResource("/" + fileName);
             }
 
-            if (lurl == null ) {
+            if (lurl == null) {
                 File f = new File(fileName);
                 if (f.exists()) {
                     try {
-                        lurl=f.toURI().toURL();
-                    } catch (MalformedURLException e) {
+                        lurl = f.toURI().toURL();
+                    }
+                    catch (MalformedURLException e) {
                         LOG.error("Unable to load the resource name [" + fileName + "]. Ignoring the resource:" + f.getPath());
                     }
-                } else {
-                    if(LOG.isDebugEnabled()) {
+                }
+                else {
+                    if (LOG.isDebugEnabled()) {
                         LOG.debug("Conf file path " + fileName + " does not exists");
                     }
                 }
@@ -953,5 +955,4 @@ public class RangerSystemAccessControlImpl
                 CONFIGURATION_INVALID,
                 String.format("%s must be specified in the ranger configurations. Value was '%s'", configEntry, config.get(configEntry)));
     }
-
 }
