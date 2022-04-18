@@ -35,17 +35,18 @@ Here are the setup steps.
 		 * Now try and start the main ranger service.
 		   * $RANGER_HOME/ews/start-ranger-admin.sh
 			   * I highly recommend monitoring the ranger PID, /run/ranger/rangeradmin.pid, and restarting it of it should fail. If using Docker/kubernetes a simple bash script like so works well
-```					 
-ranger_admin_pid=`cat /run/ranger/rangeradmin.pid` > /dev/null 2>&1
+			   ```
+			   ranger_admin_pid=`cat /run/ranger/rangeradmin.pid` > /dev/null 2>&1
 
-echo "${0##*/}:$LINENO: Waiting for ranger_admin_pid = $ranger_admin_pid"
+			   echo "${0##*/}:$LINENO: Waiting for ranger_admin_pid = $ranger_admin_pid"
 
-while s=`ps -p $ranger_admin_pid -o s=` && [[ "$s" && "$s" != 'Z' ]]; do
-    sleep 1
-done
+			   while s=`ps -p $ranger_admin_pid -o s=` && [[ "$s" && "$s" != 'Z' ]]; do
+			       sleep 1
+			   done
 
-echo "${0##*/}:$LINENO: Ranger admin service exited!!!"
-```		 
+			   echo "${0##*/}:$LINENO: Ranger admin service exited!!!"
+			   ```
+
 		 * Now try and start the AD/LDAP usersync serivce
 		   * $RANGER_HOME/usersync/ranger-usersync-services.sh start
 			 * NOTE: If you are running multiple instances of the Ranger UI, you should only ever have 1 and only 1 AD/LDAP usersync service running. Your groups will not properly sync otherwise.
@@ -66,15 +67,15 @@ echo "${0##*/}:$LINENO: Ranger admin service exited!!!"
 	   * access-control.config-files=/usr/lib/trino/etc/access-control-ranger.properties
 		 * Ranger will lockdown EVERYTHING, no user can see another users queries. If you need a system wide user inside trino that can see the problems across the cluster you should add a access-control-file-based.properties to the above comma-separated list.
    * The access-control-ranger.properties file itself. Here is an example
-```
-access-control.name=ranger
-ranger.use_ugi=true
-ranger.service_name=trino-dev-companyname-com
-ranger.hadoop_config=/workspace/testing/trino-server-dev/etc/trino-ranger-site.xml
-ranger.audit_resource=/workspace/testing/trino-server-dev/etc/ranger-trino-audit.xml
-ranger.security_resource=/workspace/testing/trino-server-dev/etc/ranger-trino-security.xml
-ranger.policy_manager_ssl_resource=/workspace/testing/trino-server-dev/etc/ranger-policymgr-ssl.xml
-```
+   ```
+   access-control.name=ranger
+   ranger.use_ugi=true
+   ranger.service_name=trino-dev-companyname-com
+   ranger.hadoop_config=/workspace/testing/trino-server-dev/etc/trino-ranger-site.xml
+   ranger.audit_resource=/workspace/testing/trino-server-dev/etc/ranger-trino-audit.xml
+   ranger.security_resource=/workspace/testing/trino-server-dev/etc/ranger-trino-security.xml
+   ranger.policy_manager_ssl_resource=/workspace/testing/trino-server-dev/etc/ranger-policymgr-ssl.xml
+   ```
      * The ranger.service_name is the name of the service you created under the Ranger UI
    * ranger.hadoop_config=
 	   * Example file: plugins/trino-ranger/conf/trino-ranger-site.xml
