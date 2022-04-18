@@ -38,3 +38,6 @@ depends:
 # When already inside the intellij docker container, run this to bring up IntelliJ
 intellij:
 	/opt/intellij/bin/idea.sh
+
+cli:
+	client/trino-cli/target/trino-cli-374-executable.jar  --server=http://localhost:8081 --user ${USER}
