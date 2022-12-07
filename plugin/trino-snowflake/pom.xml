@@ -5,8 +5,8 @@
     <parent>
         <groupId>io.trino</groupId>
         <artifactId>trino-root</artifactId>
-        <version>374</version>
-				<relativePath>../../pom.xml</relativePath>
+        <version>395</version>
+		<relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>trino-snowflake</artifactId>
@@ -24,8 +24,18 @@
         </dependency>
 
         <dependency>
+            <groupId>io.trino</groupId>
+            <artifactId>trino-plugin-toolkit</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>io.airlift</groupId>
             <artifactId>configuration</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.airlift</groupId>
+            <artifactId>log</artifactId>
         </dependency>
 
         <dependency>
@@ -46,7 +56,7 @@
         <dependency>
             <groupId>net.snowflake</groupId>
             <artifactId>snowflake-jdbc</artifactId>
-            <version>3.10.0</version>
+            <version>3.13.18</version>
         </dependency>
 
         <!-- Presto SPI -->
